@@ -1,0 +1,32 @@
+/* ChatRoom.css */
+.chat-container {
+    padding: 20px;
+  }
+  
+  .messages-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+  }
+  
+  .message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 10px;
+    width: fit-content;
+    max-width: 60%;
+    word-break: break-word;
+  }
+  
+  .my-message {
+    background-color: #d1ffd6; /* 나의 메시지 배경색 */
+    align-self: flex-end;
+    text-align: right;
+  }
+  
+  .other-message {
+    background-color: #f1f0f0; /* 상대방의 메시지 배경색 */
+    align-self: flex-start;
+    text-align: left;
+  }
+  
