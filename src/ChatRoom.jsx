@@ -65,7 +65,7 @@ const ChatRoom = () => {
         console.log("Connected to WebSocket");
 
         // 채팅방에 대한 구독
-        client.subscribe(`/api/topic/messages/${roomName}`, (messageOutput) => {  // 수정된 구독 경로
+        client.subscribe(`/topic/${roomName}`, (messageOutput) => {  // 수정된 구독 경로
           const message = JSON.parse(messageOutput.body);
           setMessages((prevMessages) => [...prevMessages, message]);
         });
@@ -110,7 +110,7 @@ const ChatRoom = () => {
         const response = await fetch(`${BASE_API_URL}/api/v1/chat/messages/${encodedRoomName}`);  // 수정된 경로
         if (response.ok) {
           const data = await response.json();
-          setMessages(data);  // 최근 메시지 상태로 업데이트
+          setMessages(data.reverse());  // 최근 메시지를 역순으로 정렬하여 상태에 저장
         } else {
           console.error("최근 메시지 가져오기 실패");
         }
