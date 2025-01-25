@@ -1,32 +1,320 @@
 /* ChatRoom.css */
 .chat-container {
-    padding: 20px;
-  }
-  
-  .messages-container {
-    max-height: 400px;
-    overflow-y: auto;
-    margin-bottom: 20px;
-  }
-  
-  .message {
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 10px;
-    width: fit-content;
-    max-width: 60%;
-    word-break: break-word;
-  }
-  
-  .my-message {
-    background-color: #d1ffd6; /* 나의 메시지 배경색 */
-    align-self: flex-end;
-    text-align: right;
-  }
-  
-  .other-message {
-    background-color: #f1f0f0; /* 상대방의 메시지 배경색 */
-    align-self: flex-start;
-    text-align: left;
-  }
-  
+  padding: 20px;
+}
+
+.messages-container {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.message {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: fit-content;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.my-message {
+  background-color: #d1ffd6; /* 나의 메시지 배경색 */
+  align-self: flex-end;
+  text-align: right;
+}
+
+.other-message {
+  background-color: #f1f0f0; /* 상대방의 메시지 배경색 */
+  align-self: flex-start;
+  text-align: left;
+}
+
+.chat-users {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.chat-users h3 {
+  text-align: center;
+  color: #333;
+  font-size: 1.5em;
+  margin-bottom: 15px;
+}
+
+.chat-users-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-weight: bold;
+  font-size: 0.9em;
+  color: #555;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+
+.chat-users ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chat-users li {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-users li:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.chat-users .user-name {
+  font-weight: bold;
+  color: #00796b;
+}
+
+.chat-users .room-name {
+  font-style: italic;
+  color: #607d8b;
+}
+
+/* 채팅 메시지 영역 */
+.chat-messages {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 20px;
+}
+
+/* 채팅 메시지 스타일 */
+.chat-message {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: fit-content;
+  max-width: 60%;
+  word-break: break-word;
+  display: flex;
+  justify-content: flex-start; /* 기본적으로 왼쪽 정렬 */
+  text-align: left; /* 기본적으로 왼쪽 정렬 */
+}
+
+/* 나의 메시지 스타일 (오른쪽 정렬) */
+.my-message {
+  background-color: #d1ffd6; /* 나의 메시지 배경색 */
+  align-self: flex-end;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  text-align: right; /* 오른쪽 정렬 */
+}
+
+/* 상대방의 메시지 스타일 */
+.other-message {
+  background-color: #f1f0f0; /* 상대방의 메시지 배경색 */
+  align-self: flex-start;
+  justify-content: flex-start; /* 왼쪽 정렬 */
+  text-align: left; /* 왼쪽 정렬 */
+}
+
+/* 입력창 스타일 */
+.chat-input {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+  margin-right: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.chat-input button {
+  padding: 8px 15px;
+  border-radius: 5px;
+  background-color: #00796b;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #004d40;
+}
+
+/* 채팅방 목록 스타일 */
+.chat-room-list {
+  display: flex;
+  flex-wrap: wrap;  /* 항목들을 여러 줄로 나누어 배치 */
+  gap: 10px;  /* 항목 간 간격 */
+  margin-top: 20px;
+}
+
+.chat-room-list p {
+  font-size: 1.1em;
+  color: #666;
+}
+
+/* 각 채팅방 항목 스타일 */
+.chat-room-item {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  flex: 1 0 30%; /* 항목이 1줄에 3개씩 배치되도록 설정 */
+  max-width: 30%;
+  box-sizing: border-box;
+}
+
+/* hover 효과 */
+.chat-room-item:hover {
+  background-color: #00796b;
+  color: white;
+  transform: translateY(-2px); /* 부드러운 이동 효과 */
+}
+
+/* 클릭 시 효과 */
+.chat-room-item:active {
+  transform: translateY(2px); /* 눌린 효과 */
+}
+
+/* 사용자 이름 설정 컨테이너 */
+.username-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  margin: auto;
+  margin-top: 50px;
+}
+
+/* 제목 스타일 */
+.username-container h3 {
+  font-size: 1.5em;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* 사용자 이름 입력창 스타일 */
+.username-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1em;
+  color: #333;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.username-input:focus {
+  border-color: #00796b;  /* 입력창에 포커스가 갔을 때 색상 변경 */
+}
+
+/* 버튼 스타일 */
+.set-username-button {
+  background-color: #00796b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.set-username-button:hover {
+  background-color: #004d40;
+}
+
+.set-username-button:active {
+  transform: translateY(2px);  /* 눌린 효과 */
+}
+
+/* 채팅방 생성 컨테이너 */
+.chat-room-creation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  margin: 30px auto;
+}
+
+/* 입력창 스타일 */
+.room-name-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1em;
+  color: #333;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.room-name-input:focus {
+  border-color: #00796b;  /* 입력창에 포커스가 갔을 때 색상 변경 */
+}
+
+/* 채팅방 생성 버튼 스타일 */
+.create-room-button {
+  background-color: #00796b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.create-room-button:hover {
+  background-color: #004d40;
+}
+
+.create-room-button:active {
+  transform: translateY(2px);  /* 눌린 효과 */
+}
+
+/* App 컴포넌트의 스타일 */
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* 세로 중앙 정렬 */
+  align-items: center;      /* 가로 중앙 정렬 */
+  height: 100vh;            /* 화면 전체 높이 사용 */
+  text-align: center;       /* 텍스트 가운데 정렬 */
+}
+
+h1 {
+  font-size: 2em;
+  margin-bottom: 20px; /* 제목과 다른 콘텐츠 간의 간격 */
+}
