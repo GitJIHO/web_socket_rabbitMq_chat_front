@@ -1,25 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
-import './ChatRoom.css'; // 스타일을 별도로 관리
+import './ChatRoom.css';
 
-// 전역 상수 정의
 const BASE_API_URL = "http://algo.knu-soft.site";
 const BASE_WS_URL = "ws://algo.knu-soft.site";
 
 const ChatRoom = () => {
-  const [roomName, setRoomName] = useState("");  // 선택된 채팅방 이름
-  const [newRoomName, setNewRoomName] = useState("");  // 새로 만들 채팅방 이름
+  const [roomName, setRoomName] = useState("");
+  const [newRoomName, setNewRoomName] = useState("");
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(""); // 사용자 이름 설정
+  const [tempUsername, setTempUsername] = useState(""); // 임시 이름 입력 상태
   const [stompClient, setStompClient] = useState(null);
-  const [rooms, setRooms] = useState([]);  // 방 목록 상태
-  const [isNameSet, setIsNameSet] = useState(false);  // 이름 설정 여부 상태
+  const [rooms, setRooms] = useState([]);
 
-  // 메시지 컨테이너 참조
   const messagesEndRef = useRef(null);
 
-  // 채팅방 생성 API 호출
   const createRoom = async () => {
     if (!newRoomName) {
       alert("채팅방 이름을 입력해주세요.");
@@ -27,18 +24,18 @@ const ChatRoom = () => {
     }
 
     try {
-      const response = await fetch(`${BASE_API_URL}/api/v1/chat/rooms`, {  // 수정된 경로
+      const response = await fetch(`${BASE_API_URL}/api/v1/chat/rooms`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ roomName: newRoomName }), // 채팅방 이름을 서버로 전송
+        body: JSON.stringify({ roomName: newRoomName }),
       });
 
       if (response.ok) {
         alert("채팅방이 생성되었습니다.");
-        fetchRooms(); // 채팅방 생성 후 방 목록을 다시 가져옴
-        setNewRoomName(""); // 채팅방 생성 후 입력란 초기화
+        fetchRooms();
+        setNewRoomName("");
       } else {
         alert("채팅방 생성에 실패했습니다.");
       }
@@ -48,35 +45,27 @@ const ChatRoom = () => {
     }
   };
 
-  // WebSocket 연결
   const connectToChatRoom = () => {
-    if (!roomName) return;  // 방 이름이 없으면 연결하지 않음
+    if (!roomName) return;
 
-    // 이미 stompClient가 연결되어 있다면 종료
     if (stompClient) {
       stompClient.deactivate();
     }
 
     const client = new Client({
-      brokerURL: `${BASE_WS_URL}/api/ws`,  // 수정된 WebSocket 경로
-      connectHeaders: {},
+      brokerURL: `${BASE_WS_URL}/api/ws`,
       debug: (str) => console.log(str),
       onConnect: () => {
         console.log("Connected to WebSocket");
-
-        // 채팅방에 대한 구독
-        client.subscribe(`/topic/${roomName}`, (messageOutput) => {  // 수정된 구독 경로
+        client.subscribe(`/topic/${roomName}`, (messageOutput) => {
           const message = JSON.parse(messageOutput.body);
           setMessages((prevMessages) => [...prevMessages, message]);
         });
 
-        // 사용자 이름이 설정되면 setName 메시지 보내기
-        if (username) {
-          client.publish({
-            destination: `/api/app/chat/setName/${roomName}`,
-            body: JSON.stringify({ userName: username }),
-          });
-        }
+        client.publish({
+          destination: `/api/app/chat/setName/${roomName}`,
+          body: JSON.stringify({ userName: username }),
+        });
       },
       onStompError: (frame) => {
         console.error(`STOMP error: ${frame}`);
@@ -87,13 +76,12 @@ const ChatRoom = () => {
     setStompClient(client);
   };
 
-  // 채팅방 목록 가져오기
   const fetchRooms = async () => {
     try {
-      const response = await fetch(`${BASE_API_URL}/api/v1/chat/rooms`);  // 수정된 경로
+      const response = await fetch(`${BASE_API_URL}/api/v1/chat/rooms`);
       if (response.ok) {
         const data = await response.json();
-        setRooms(data); // 채팅방 목록을 상태에 저장
+        setRooms(data);
       } else {
         alert("채팅방 목록을 가져오는 데 실패했습니다.");
       }
@@ -103,28 +91,25 @@ const ChatRoom = () => {
     }
   };
 
-  // 최근 메시지 가져오기
   const fetchRecentMessages = async (roomName) => {
     try {
-        const encodedRoomName = encodeURIComponent(roomName);  // 방 이름을 URL 인코딩
-        const response = await fetch(`${BASE_API_URL}/api/v1/chat/messages/${encodedRoomName}`);  // 수정된 경로
-        if (response.ok) {
-          const data = await response.json();
-          setMessages(data.reverse());  // 최근 메시지를 역순으로 정렬하여 상태에 저장
-        } else {
-          console.error("최근 메시지 가져오기 실패");
-        }
+      const encodedRoomName = encodeURIComponent(roomName);
+      const response = await fetch(`${BASE_API_URL}/api/v1/chat/messages/${encodedRoomName}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.reverse());
+      } else {
+        console.error("최근 메시지 가져오기 실패");
+      }
     } catch (error) {
-        console.error("Error fetching recent messages:", error);
+      console.error("Error fetching recent messages:", error);
     }
   };
 
-  // 컴포넌트가 마운트되었을 때 방 목록을 가져옴
   useEffect(() => {
     fetchRooms();
   }, []);
 
-  // WebSocket 연결 해제
   useEffect(() => {
     return () => {
       if (stompClient) {
@@ -133,22 +118,19 @@ const ChatRoom = () => {
     };
   }, [stompClient]);
 
-  // roomName이 변경되면 WebSocket 연결 및 최근 메시지 가져오기
   useEffect(() => {
     if (roomName) {
-      fetchRecentMessages(roomName);  // 최근 메시지 가져오기
-      connectToChatRoom();  // WebSocket 연결
+      fetchRecentMessages(roomName);
+      connectToChatRoom();
     }
-  }, [roomName]);  // roomName이 변경될 때만 실행
+  }, [roomName]);
 
-  // 새로운 메시지가 추가될 때마다 스크롤을 가장 밑으로 내리기
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  // 메시지 전송
   const handleSendMessage = () => {
     if (!stompClient || !stompClient.connected) {
       console.log("WebSocket 연결이 아직 활성화되지 않았습니다.");
@@ -158,41 +140,51 @@ const ChatRoom = () => {
     if (newMessage.trim()) {
       const messageRequest = {
         sender: username,
-        content: newMessage,  // message 대신 content로 변경
+        content: newMessage,
         roomName,
       };
 
-      console.log("Sending message:", messageRequest);  // 메시지 내용 확인
-
-      // 메시지 전송
       stompClient.publish({
         destination: `/api/app/chat/${roomName}`,
         body: JSON.stringify(messageRequest),
       });
 
-      setNewMessage("");  // 메시지 입력란 초기화
-    } else {
-      console.log("Message is empty or only whitespace.");
+      setNewMessage("");
     }
   };
 
   const handleSetUsername = () => {
-    if (!username) {
-      alert("사용자 이름을 입력하세요.");
-      return;
+    if (tempUsername.trim()) {
+      setUsername(tempUsername);
+      alert("이름이 설정되었습니다.");
+    } else {
+      alert("이름을 입력해주세요.");
     }
-
-    setIsNameSet(true);  // 이름 설정 완료
   };
+
+  if (!username) {
+    return (
+      <div className="username-container">
+        <h3>사용자 이름 설정</h3>
+        <input
+          type="text"
+          placeholder="이름을 입력하세요"
+          value={tempUsername}
+          onChange={(e) => setTempUsername(e.target.value)}
+        />
+        <button onClick={handleSetUsername}>등록</button>
+      </div>
+    );
+  }
+
   return (
     <div className="chat-container">
-      {/* 채팅방 생성 입력창 */}
       <div>
         <input
           type="text"
           placeholder="채팅방 이름"
           value={newRoomName}
-          onChange={(e) => setNewRoomName(e.target.value)} // 방 이름 입력
+          onChange={(e) => setNewRoomName(e.target.value)}
         />
         <button onClick={createRoom}>채팅방 생성</button>
       </div>
@@ -206,36 +198,19 @@ const ChatRoom = () => {
             <button
               key={index}
               onClick={() => {
-                setRoomName(room.roomName); // 방을 선택
-                setMessages([]); // 기존 메시지 초기화
-                setIsNameSet(false); // 이름 설정 초기화
+                setRoomName(room.roomName);
+                setMessages([]);
               }}
             >
-              {room.roomName}  {/* 방 이름을 제대로 출력 */}
+              {room.roomName}
             </button>
           ))
         )}
       </div>
 
-      {roomName && !isNameSet && (
+      {roomName && (
         <div>
           <h3>채팅방: {roomName}</h3>
-          <div>
-            <input
-              type="text"
-              placeholder="사용자 이름"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)} // 사용자 이름 입력
-            />
-            <button onClick={handleSetUsername}>이름 설정</button>
-          </div>
-        </div>
-      )}
-
-      {roomName && isNameSet && (
-        <div>
-          <h3>채팅방: {roomName}</h3>
-          <p>내 이름: {username}</p> {/* 내 이름을 채팅방 이름 밑에 추가 */}
           <div className="messages-container">
             {messages.map((message, index) => (
               <div
@@ -244,17 +219,16 @@ const ChatRoom = () => {
                   message.sender === username ? "my-message" : "other-message"
                 }`}
               >
-                <strong>{message.sender}:</strong> {message.content} {/* content로 변경 */}
+                <strong>{message.sender}:</strong> {message.content}
               </div>
             ))}
-            {/* 스크롤을 가장 밑으로 내리기 위한 div */}
             <div ref={messagesEndRef} />
           </div>
           <div>
             <input
               type="text"
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)} // 메시지 입력
+              onChange={(e) => setNewMessage(e.target.value)}
               placeholder="메시지를 입력하세요"
             />
             <button onClick={handleSendMessage}>전송</button>
