@@ -318,3 +318,7 @@ h1 {
   font-size: 2em;
   margin-bottom: 20px; /* 제목과 다른 콘텐츠 간의 간격 */
 }
+
+.chat-message strong {
+  margin-right: 3px; /* strong과 span 사이에 5px 간격 추가 */
+}

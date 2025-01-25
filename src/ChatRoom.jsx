@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import './ChatRoom.css';
 
-const BASE_API_URL = "http://localhost:8080"; // REST API 기본 URL
-const BASE_WS_URL = "ws://localhost:8080"; // WebSocket 기본 URL
+const BASE_API_URL = "http://algo.knu-soft.site"; // REST API 기본 URL
+const BASE_WS_URL = "ws://algo.knu-soft.site"; // WebSocket 기본 URL
 
 const ChatRoom = () => {
   const [roomName, setRoomName] = useState(""); // 현재 접속 중인 채팅방 이름
@@ -65,12 +65,6 @@ const ChatRoom = () => {
           setUsersInRooms(userList);
         });
 
-        // 사용자 이름 서버에 설정
-        client.publish({
-          destination: "/api/app/chat/setName",
-          body: JSON.stringify({ userName: username }),
-        });
-
         // 사용자 입장 상태 전송 (미접속 상태)
         client.publish({
           destination: "/api/app/chat/join",
@@ -110,12 +104,6 @@ const ChatRoom = () => {
         client.subscribe("/topic/users", (messageOutput) => {
           const userList = JSON.parse(messageOutput.body);
           setUsersInRooms(userList); // 사용자와 방 정보 업데이트
-        });
-
-        // 사용자 이름 서버에 설정
-        client.publish({
-          destination: `/api/app/chat/setName/${roomName}`,
-          body: JSON.stringify({ userName: username }),
         });
 
         // 사용자 입장 정보 서버에 전송
@@ -281,7 +269,7 @@ const ChatRoom = () => {
         </div>
 
 
-      <h3>현재 채팅방에 접속 중인 사용자:</h3>
+      <h3>현재 채팅방에 접속 중인 사용자</h3>
       <div className="chat-users">
         <div className="chat-users-header">
           <span className="header-name">이름</span>
@@ -313,7 +301,7 @@ const ChatRoom = () => {
                   message.sender === username ? "my-message" : "other-message"
                 }`}
               >
-                <strong>{message.sender}: </strong>
+                <strong>{message.sender}:    </strong>
                 <span>{message.content}</span>
               </div>
             ))}
