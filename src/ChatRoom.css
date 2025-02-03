@@ -322,3 +322,66 @@ h1 {
 .chat-message strong {
   margin-right: 3px; /* strong과 span 사이에 5px 간격 추가 */
 }
+
+/* 채팅방별 접속자 수 영역 */
+.room-users-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 제목 스타일 */
+.room-users-container h3 {
+  font-size: 1.3em;  /* 글자 크기 줄이기 */
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* 채팅방 이름과 접속자 수를 나열하는 부분 */
+.room-users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 각 채팅방의 이름과 접속자 수 항목 */
+.room-users-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;  /* 패딩 줄이기 */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font-size: 1em;  /* 글자 크기 줄이기 */
+}
+
+.room-users-item:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.room-users-item .room-name {
+  font-weight: bold;
+  color: #00796b;
+}
+
+.room-users-item .user-count {
+  color: #607d8b;
+  font-weight: bold;
+}
+
+/* "채팅방 미접속" 이름일 때 스타일 */
+.room-users-item .room-name.missing-user {
+  color: #888;  /* 회색으로 변경 */
+}
+
+/* "사용자가 없습니다." 메시지 스타일 */
+.no-users-message {
+  font-size: 1em;  /* 글자 크기 줄이기 */
+  color: #666;
+  text-align: center;
+}

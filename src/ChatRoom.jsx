@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import './ChatRoom.css';
 
-const BASE_API_URL = "http://algo.knu-soft.site"; // REST API 기본 URL
+const BASE_API_URL = "http://algo-knu-soft.site"; // REST API 기본 URL
 const BASE_WS_URL = "ws://algo.knu-soft.site"; // WebSocket 기본 URL
 
 const ChatRoom = () => {
@@ -15,6 +15,7 @@ const ChatRoom = () => {
   const [stompClient, setStompClient] = useState(null); // WebSocket 연결 객체
   const [rooms, setRooms] = useState([]); // 채팅방 목록
   const [usersInRooms, setUsersInRooms] = useState([]); // 채팅방 사용자 목록
+  const [roomUsers, setRoomUsers] = useState({}); // 각 방의 접속자 목록
 
   const messagesEndRef = useRef(null); // 채팅 메시지 스크롤 조작을 위한 Ref
 
@@ -65,6 +66,12 @@ const ChatRoom = () => {
           setUsersInRooms(userList);
         });
 
+        // 방별 사용자 목록 주제 구독
+        client.subscribe("/topic/room-users", (messageOutput) => {
+          const roomUserList = JSON.parse(messageOutput.body);        
+          setRoomUsers(roomUserList);
+        });        
+        
         // 사용자 입장 상태 전송 (미접속 상태)
         client.publish({
           destination: "/api/app/chat/join",
@@ -105,6 +112,12 @@ const ChatRoom = () => {
           const userList = JSON.parse(messageOutput.body);
           setUsersInRooms(userList); // 사용자와 방 정보 업데이트
         });
+
+        client.subscribe("/topic/room-users", (messageOutput) => {
+          const roomUserList = JSON.parse(messageOutput.body);
+          setRoomUsers(roomUserList);
+        });
+          
 
         // 사용자 입장 정보 서버에 전송
         client.publish({
@@ -288,6 +301,32 @@ const ChatRoom = () => {
             </li>
           ))}
         </ul>
+      </div>
+
+      <br></br>
+
+      <h3>채팅방별 접속자 수</h3>
+      <div className="room-users-container">
+        <div className="chat-users-header">
+          <span className="header-name">채팅방</span>
+          <span className="header-room">인원</span>
+        </div>
+        <div className="room-users-list">
+          {Object.keys(roomUsers).length > 0 ? (
+            Object.keys(roomUsers).map((roomName, index) => (
+              <div key={index} className="room-users-item">
+                <span
+                  className={`room-name ${roomName === "채팅방 미접속" ? "missing-user" : ""}`}
+                >
+                  {roomName}
+                </span>
+                <span className="user-count">{roomUsers[roomName]}명</span>
+              </div>
+            ))
+          ) : (
+            <p className="no-users-message">사용자가 없습니다.</p>
+          )}
+        </div>
       </div>
 
       {roomName && (
