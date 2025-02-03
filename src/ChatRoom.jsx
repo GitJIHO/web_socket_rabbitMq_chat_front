@@ -104,9 +104,14 @@ const ChatRoom = () => {
         // 채팅방 메시지 구독
         client.subscribe(`/topic/${roomName}`, (messageOutput) => {
           const message = JSON.parse(messageOutput.body);
+          
+          // 메시지 본문 뒤에 공백 추가
+          message.content = message.content + " ";
+
+          // 메시지를 상태에 저장
           setMessages((prevMessages) => [...prevMessages, message]);
         });
-
+        
         // 사용자 목록 구독
         client.subscribe("/topic/users", (messageOutput) => {
           const userList = JSON.parse(messageOutput.body);
