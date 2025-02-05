@@ -385,3 +385,37 @@ h1 {
   color: #666;
   text-align: center;
 }
+
+/* pagination.css */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #00796b;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:hover {
+  background-color: #004d40;
+}
+
+.pagination span {
+  margin: 0 10px;
+  font-size: 18px;
+}
+
+.pagination button:active {
+  transform: scale(0.95);
+}
+
+.pagination span {
+  font-weight: bold;
+}

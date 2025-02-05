@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
 import './ChatRoom.css';
 
@@ -16,8 +16,15 @@ const ChatRoom = () => {
   const [rooms, setRooms] = useState([]); // 채팅방 목록
   const [usersInRooms, setUsersInRooms] = useState([]); // 채팅방 사용자 목록
   const [roomUsers, setRoomUsers] = useState({}); // 각 방의 접속자 목록
+  const [roomPage, setRoomPage] = useState(0); // 채팅방 목록 페이지
+  const [hasMoreRooms, setHasMoreRooms] = useState(true); // 더 불러올 채팅방이 있는지 여부
+  const [messagePage, setMessagePage] = useState(0); // 채팅 메시지 페이지
+  const [hasMoreMessages, setHasMoreMessages] = useState(true); // 더 불러올 메시지가 있는지 여부
+  const [lastScrollTop, setLastScrollTop] = useState(0);
 
   const messagesEndRef = useRef(null); // 채팅 메시지 스크롤 조작을 위한 Ref
+  const roomListRef = useRef(null); // 채팅방 목록 스크롤 조작을 위한 Ref
+  const messageListRef = useRef(null); // 채팅 메시지 스크롤 조작을 위한 Ref
 
   // 새 채팅방 생성 요청
   const createRoom = async () => {
@@ -37,7 +44,9 @@ const ChatRoom = () => {
 
       if (response.ok) {
         alert("채팅방이 생성되었습니다.");
-        fetchRooms(); // 채팅방 목록 새로고침
+        setRoomPage(0); // 채팅방 목록 초기화
+        setRooms([]); // 채팅방 목록 초기화
+        fetchRooms(0); // 채팅방 목록 새로고침
         setNewRoomName(""); // 입력 필드 초기화
       } else {
         alert("채팅방 생성에 실패했습니다.");
@@ -109,7 +118,7 @@ const ChatRoom = () => {
           message.content = message.content + " ";
 
           // 메시지를 상태에 저장
-          setMessages((prevMessages) => [...prevMessages, message]);
+          setMessages((prevMessages) => [message, ...prevMessages]);
         });
         
         // 사용자 목록 구독
@@ -140,12 +149,13 @@ const ChatRoom = () => {
   };
 
   // 채팅방 목록 가져오기
-  const fetchRooms = async () => {
+  const fetchRooms = async (pageNumber) => {
     try {
-      const response = await fetch(`${BASE_API_URL}/api/v1/chat/rooms`);
+      const response = await fetch(`${BASE_API_URL}/api/v1/chat/rooms?page=${pageNumber}&size=5&sort=createdAt,desc`);
       if (response.ok) {
         const data = await response.json();
-        setRooms(data);
+        setRooms((prevRooms) => (pageNumber === 0 ? data.content : [...prevRooms, ...data.content]));
+        setHasMoreRooms(!data.last);
       } else {
         alert("채팅방 목록을 가져오는 데 실패했습니다.");
       }
@@ -156,13 +166,14 @@ const ChatRoom = () => {
   };
 
   // 특정 채팅방의 최근 메시지 가져오기
-  const fetchRecentMessages = async (roomName) => {
+  const fetchRecentMessages = async (roomName, pageNumber) => {
     try {
       const encodedRoomName = encodeURIComponent(roomName);
-      const response = await fetch(`${BASE_API_URL}/api/v1/chat/messages/${encodedRoomName}`);
+      const response = await fetch(`${BASE_API_URL}/api/v1/chat/messages/${encodedRoomName}?page=${pageNumber}&size=10&sort=chatTime,asc`);
       if (response.ok) {
         const data = await response.json();
-        setMessages(data.reverse());
+        setMessages((prevMessages) => [...prevMessages, ...data.content]);
+        setHasMoreMessages(!data.last);
       } else {
         console.error("최근 메시지 가져오기 실패");
       }
@@ -171,18 +182,48 @@ const ChatRoom = () => {
     }
   };
 
+  // 채팅방 목록 스크롤 이벤트 핸들러
+  const handleRoomListScroll = useCallback(() => {
+    if (roomListRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = roomListRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 10 && hasMoreRooms) {
+        setRoomPage((prevPage) => prevPage + 1);
+      }
+    }
+  }, [hasMoreRooms]);
+
+  // 채팅 메시지 스크롤 이벤트 핸들러
+  const handleMessageListScroll = useCallback(() => {
+    if (messageListRef.current) {
+      const { scrollTop } = messageListRef.current;
+      setLastScrollTop(scrollTop);
+      if (scrollTop === 0 && hasMoreMessages) {
+        setMessagePage((prevPage) => prevPage + 1);
+      }
+    }
+  }, [hasMoreMessages]);
+
   // 컴포넌트 마운트 시 채팅방 목록 불러오기
   useEffect(() => {
-    fetchRooms();
-  }, []);
+    fetchRooms(roomPage);
+  }, [roomPage]);
 
   // 채팅방 이름 변경 시 메시지와 연결 초기화
   useEffect(() => {
     if (roomName) {
-      fetchRecentMessages(roomName);
+      setMessagePage(0); // 메시지 페이지 초기화
+      setMessages([]); // 메시지 목록 초기화
+      fetchRecentMessages(roomName, 0);
       connectToChatRoom();
     }
   }, [roomName]);
+
+  // 메시지 페이지 변경 시 추가 메시지 불러오기
+  useEffect(() => {
+    if (roomName && messagePage > 0) {
+      fetchRecentMessages(roomName, messagePage);
+    }
+  }, [messagePage]);
 
   // 사용자 이름 설정 시 WebSocket 연결 초기화
   useEffect(() => {
@@ -191,9 +232,9 @@ const ChatRoom = () => {
     }
   }, [username]);
 
-  // 새 메시지가 추가될 때 스크롤 조정
+  // 메시지를 추가할 때만 스크롤 조정
   useEffect(() => {
-    if (messagesEndRef.current) {
+    if (messagesEndRef.current && messages.length > 0 && lastScrollTop > 0) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
@@ -267,7 +308,7 @@ const ChatRoom = () => {
       </div>
 
       <h3>채팅방 목록</h3>
-        <div className="chat-room-list">
+        <div className="chat-room-list" ref={roomListRef} onScroll={handleRoomListScroll}>
           {rooms.length === 0 ? (
             <p>생성된 채팅방이 없습니다.</p>
           ) : (
@@ -285,7 +326,16 @@ const ChatRoom = () => {
             ))
           )}
         </div>
-
+        <br></br>
+        <div className="pagination">
+          {roomPage > 0 && (
+            <button onClick={() => setRoomPage((prevPage) => prevPage - 1)}>이전</button>
+          )}
+          <span>페이지 {roomPage + 1}</span>
+          {hasMoreRooms && (
+            <button onClick={() => setRoomPage((prevPage) => prevPage + 1)}>다음</button>
+          )}
+        </div>
 
       <h3>현재 채팅방에 접속 중인 사용자</h3>
       <div className="chat-users">
@@ -337,8 +387,8 @@ const ChatRoom = () => {
       {roomName && (
         <div className="chat-room">
           <h3>{roomName} 채팅방</h3>
-          <div className="chat-messages">
-            {messages.map((message, index) => (
+          <div className="chat-messages" ref={messageListRef} onScroll={handleMessageListScroll}>
+            {messages.slice().reverse().map((message, index) => (
               <div
                 key={index}
                 className={`chat-message ${
