@@ -11,7 +11,9 @@ const ChatRoom = () => {
   const [messages, setMessages] = useState([]); // 채팅 메시지 리스트
   const [newMessage, setNewMessage] = useState(""); // 새로 작성 중인 메시지 상태
   const [username, setUsername] = useState(""); // 사용자 이름
+  const [email, setEmail] = useState(""); // 사용자 이메일
   const [tempUsername, setTempUsername] = useState(""); // 사용자 이름 입력 상태
+  const [tempEmail, setTempEmail] = useState(""); // 사용자 이메일 입력 상태
   const [stompClient, setStompClient] = useState(null); // WebSocket 연결 객체
   const [rooms, setRooms] = useState([]); // 채팅방 목록
   const [usersInRooms, setUsersInRooms] = useState([]); // 채팅방 사용자 목록
@@ -84,7 +86,7 @@ const ChatRoom = () => {
         // 사용자 입장 상태 전송 (미접속 상태)
         client.publish({
           destination: "/api/app/chat/join",
-          body: JSON.stringify({ userName: username, roomName: "채팅방 미접속" }),
+          body: JSON.stringify({ userName: username, roomName: "채팅방 미접속", email }),
         });
       },
       onStompError: (frame) => {
@@ -136,7 +138,7 @@ const ChatRoom = () => {
         // 사용자 입장 정보 서버에 전송
         client.publish({
           destination: "/api/app/chat/join",
-          body: JSON.stringify({ userName: username, roomName }),
+          body: JSON.stringify({ userName: username, roomName, email }),
         });
       },
       onStompError: (frame) => {
@@ -251,6 +253,7 @@ const ChatRoom = () => {
         sender: username,
         content: newMessage,
         roomName,
+        email, // 이메일 추가
       };
 
       stompClient.publish({
@@ -262,13 +265,14 @@ const ChatRoom = () => {
     }
   };
 
-  // 사용자 이름 설정
+  // 사용자 이름 및 이메일 설정
   const handleSetUsername = () => {
-    if (tempUsername.trim()) {
+    if (tempUsername.trim() && tempEmail.trim()) {
       setUsername(tempUsername);
-      alert("이름이 설정되었습니다.");
+      setEmail(tempEmail);
+      alert("이름과 이메일이 설정되었습니다.");
     } else {
-      alert("이름을 입력해주세요.");
+      alert("이름과 이메일을 입력해주세요.");
     }
   };
 
@@ -276,12 +280,19 @@ const ChatRoom = () => {
   if (!username) {
     return (
       <div className="username-container">
-        <h3>사용자 이름 설정</h3>
+        <h3>사용자 이름 및 이메일 설정</h3>
         <input
           type="text"
           placeholder="이름을 입력하세요"
           value={tempUsername}
           onChange={(e) => setTempUsername(e.target.value)}
+          className="username-input"
+        />
+        <input
+          type="email"
+          placeholder="이메일을 입력하세요"
+          value={tempEmail}
+          onChange={(e) => setTempEmail(e.target.value)}
           className="username-input"
         />
         <button onClick={handleSetUsername} className="set-username-button">
@@ -392,7 +403,7 @@ const ChatRoom = () => {
               <div
                 key={index}
                 className={`chat-message ${
-                  message.sender === username ? "my-message" : "other-message"
+                  message.email === email ? "my-message" : "other-message"
                 }`}
               >
                 <strong>{message.sender}:    </strong>
