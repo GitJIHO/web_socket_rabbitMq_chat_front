@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
 import './ChatRoom.css';
 
-const BASE_API_URL = "http://algo.knu-soft.site"; // REST API 기본 URL
+const BASE_API_URL = "https://algo.knu-soft.site"; // REST API 기본 URL
 const BASE_WS_URL = "ws://algo.knu-soft.site"; // WebSocket 기본 URL
 
 const ChatRoom = () => {
